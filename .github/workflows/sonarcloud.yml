@@ -1,0 +1,48 @@
+name: SonarCloud Scan
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  sonarcloud:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '6.0' # Update to match the version of .NET used in your project
+
+    - name: Install Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '16' # Update to the version of Node.js used in your project
+
+    - name: Restore .NET dependencies
+      run: dotnet restore
+
+    - name: Build .NET project
+      run: dotnet build --no-restore
+
+    - name: SonarCloud Scan
+      uses: SonarSource/sonarcloud-github-action@v1
+      env:
+        SONAR_TOKEN: ${{ secrets.SecurityTesting }}
+      with:
+        args: >
+          -Dsonar.projectKey=<your_project_key>
+          -Dsonar.organization=<your_organization>
+          -Dsonar.host.url=https://sonarcloud.io
+          -Dsonar.language=js,cs
+          -Dsonar.sources=.
+          -Dsonar.exclusions=**/node_modules/**,**/bin/**,**/obj/**
+          -Dsonar.tests=.
+          -Dsonar.test.inclusions=**/*.spec.js,**/*.test.js,**/*.Tests.cs
