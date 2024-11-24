@@ -1,0 +1,27 @@
+stages:
+  - codeql-analysis
+
+variables:
+  CODEQL_VERSION: "latest"
+
+codeql-analysis:
+  stage: codeql-analysis
+  image: github/codeql:latest
+  script:
+    # Fetch the repository code
+    - git fetch --all
+
+    # Build the C# project (if applicable, adjust the build command for your environment)
+    - dotnet build
+
+    # Create a CodeQL database for C# and JavaScript
+    - codeql database create codeql-db --language=csharp --language=javascript --command="dotnet build"
+
+    # Analyze the database and produce SARIF output
+    - codeql database analyze codeql-db --format=sarif-latest --output=results.sarif
+
+  # Save the SARIF results as artifacts for review
+  artifacts:
+    paths:
+      - results.sarif
+    when: always
